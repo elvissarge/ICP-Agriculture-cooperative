@@ -1,0 +1,14 @@
+# Various IDEs and Editors
+.vscode/
+.idea/
+**/*~
+
+# dfx temporary files
+.dfx/
+
+# frontend code
+node_modules/
+dist/
+
+# environment variables
+.azle

@@ -185,12 +185,12 @@ $update;
 export function applyCooperative(coopID: string, farmerPayload: FarmerPayload): Result<Cooperative, string> {
   return match(cooperativeStorage.get(coopID), {
     Some: (cooperative) => {
-      const farmers = cooperative.members || [];
+      const members = cooperative.members || [];
 
       //check if the caller is already in the cooperative
-      if (farmers.length > 0) {
-        const isFarmer = farmers.findIndex((farmer) => farmer.id.toString() === ic.caller().toString())>-1;
-        if (isFarmer) {
+      if (members.length > 0) {
+        const isMember = members.findIndex((farmer) => farmer.id.toString() === ic.caller().toString())>-1;
+        if (isMember) {
           return Result.Err<Cooperative, string>(`You are already a member of the cooperative with id=${coopID}.`);
         }
       }
@@ -201,11 +201,11 @@ export function applyCooperative(coopID: string, farmerPayload: FarmerPayload): 
         email: farmerPayload.email,
         applyAt: ic.time()
     };
-    farmers.push(farmer);
+    members.push(farmer);
 
-    const updatedCooperative: Cooperative = { ...cooperative, farmers, updatedAt: Opt.Some(ic.time()) };
+    const updatedCooperative: Cooperative = { ...cooperative, members, updatedAt: Opt.Some(ic.time()) };
     cooperativeStorage.insert(cooperative.coopID, updatedCooperative);
-            return Result.Ok<Cooperative, string>(updatedCooperative);
+    return Result.Ok<Cooperative, string>(updatedCooperative);
     },
     None: () => Result.Err<Cooperative, string>(`Could not apply to the Cooperative with id ${coopID}. Cooperative not found`)
   });
@@ -260,10 +260,10 @@ export function rateCooperative(coopID: string, ratingPayload: RatingPayload): R
         owner: ic.caller().toString(),
         rate: ratingPayload.rating,
         updatedAt: ic.time()
-      };
+      }
 
       if (ratingPayload.rating < 1 || ratingPayload.rating > 10) {
-        return Result.Err<Cooperative, string>(`rating must be between 1 and 10`);
+        return Result.Err<Cooperative, string>(`rating must be between 1 and 10`)
       }
       //update the rating 
       ratings.push(ratingPayload.rating)
