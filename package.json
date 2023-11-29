@@ -1,0 +1,14 @@
+{
+  "name":"sarge-dfinity-project",
+  "main": "src",
+  "dependencies": {
+    "azle": "0.16.2",
+    "uuid": "^9.0.0"
+  },
+  "engines": {
+    "node": "^12 || ^14 || ^16 || ^18"
+  },
+  "devDependencies": {
+    "@types/uuid": "^9.0.1"
+  }
+}

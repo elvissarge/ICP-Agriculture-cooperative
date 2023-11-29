@@ -1,0 +1,12 @@
+{
+    "canisters": {
+       "agriculture_cooperative": {
+        "type": "custom",
+        "build": "npx azle agriculture_cooperative",
+        "root": "src",
+        "ts": "src/index.ts",
+        "candid": "src/index.did",
+        "wasm": ".azle/agriculture_cooperative/agriculture_cooperative.wasm.gz"
+      }
+    }
+  }
