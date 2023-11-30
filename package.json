@@ -2,7 +2,7 @@
   "name":"sarge-dfinity-project",
   "main": "src",
   "dependencies": {
-    "azle": "0.16.2",
+    "azle": "0.17.1",
     "uuid": "^9.0.0"
   },
   "engines": {
