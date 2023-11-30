@@ -24,7 +24,7 @@ type Cooperative = Record<{
   products: Vec<string>;
   equipment: Vec<string>;
   description: string;
-  ratings: Vec<number>;
+  ratings: Vec<Rating>;
   createdAt: nat64;
   updatedAt: Opt<nat64>;
 }>
@@ -41,14 +41,14 @@ type Rating = Record<{
   id: string;
   owner: string;
   rate: number;
-  updateAt: nat64;
+  updatedAt: nat64;
 }>
 
 type RatingPayload = Record<{
   rate: number;
 }>
 
-const cooperativeStorage = new StableBTreeMap(0, 44, 1024);
+const cooperativeStorage = new StableBTreeMap<string, Cooperative>(0, 44, 1024);
 
 /**
  * Get all Cooperatives
@@ -60,7 +60,7 @@ export function getCooperatives(): Result<Vec<Cooperative>, string> {
 
 /**
  * Get Cooperative by id.
- */
+ */ 
 $query;
 export function getCooperative(coopID: string): Result<Cooperative, string> {
   return match(cooperativeStorage.get(coopID), {
@@ -105,11 +105,11 @@ export function publishCooperative(payload: CooperativePayload): Result<Cooperat
     products: payload.products,
     equipment: payload.equipment,
     description: payload.description,
-    rating: [],
+    ratings: [],
     createdAt: ic.time(),
     updatedAt: Opt.None,
   };
-  cooperativeStorage.insert(cooperative.id, cooperative);
+  cooperativeStorage.insert(cooperative.coopID, cooperative);
   return Result.Ok(cooperative);
 }
 
@@ -155,7 +155,7 @@ $query;
 export function searchCoops(keyword: string): Result<Vec<Cooperative>, string> {
   const _cooperatives = cooperativeStorage.values().filter((cooperative) => {
     // seerch keyword in cooperative's field
-    const isMatched = cooperative.position.includes(keyword)
+    const isMatched = cooperative.equipment.includes(keyword)
     || cooperative.products.includes(keyword)
     || cooperative.coopName.includes(keyword)
     || cooperative.address.includes(keyword)
@@ -171,7 +171,7 @@ export function searchCoops(keyword: string): Result<Vec<Cooperative>, string> {
 $query;
 export function getAppliedCooperativess(): Result<Vec<Cooperative>, string> {
     const myCooperatives = cooperativeStorage.values().filter((cooperative) => {
-        const farmers = cooperative.farmers || [];
+        const farmers = cooperative.members || [];
         const isFarmer = farmers.some((farmer) => farmer.id === ic.caller().toString());
         return isFarmer;
     });
@@ -198,8 +198,7 @@ export function applyCooperative(coopID: string, farmerPayload: FarmerPayload): 
         id: ic.caller.toString(),
         name: farmerPayload.name,
         phone: farmerPayload.phone,
-        email: farmerPayload.email,
-        applyAt: ic.time()
+        email: farmerPayload.email
     };
     members.push(farmer);
 
@@ -218,7 +217,7 @@ $update;
 export function cancelAppliedCooperative(coopID: string): Result<Cooperative, string> {
     return match(cooperativeStorage.get(coopID), {
         Some: (cooperative) => {
-            const farmers = cooperative.farmers || [];
+            const farmers = cooperative.members || [];
             // check if the caller has already applied to the cooperative
             if (farmers.length === 0) {
                 return Result.Err<Cooperative, string>(`You have not applied the Cooperative with id=${coopID}.`);
@@ -230,7 +229,7 @@ export function cancelAppliedCooperative(coopID: string): Result<Cooperative, st
             }
 
             const updatedFarmers = farmers.filter((farmer) => farmer.id.toString() !== ic.caller().toString());
-            const updatedCooperative: Cooperative = { ...cooperative, farmers: updatedFarmers, updatedAt: Opt.Some(ic.time()) };
+            const updatedCooperative: Cooperative = { ...cooperative, members: updatedFarmers, updatedAt: Opt.Some(ic.time()) };
             cooperativeStorage.insert(cooperative.coopID, updatedCooperative);
             return Result.Ok<Cooperative, string>(updatedCooperative);
         },
@@ -258,17 +257,17 @@ export function rateCooperative(coopID: string, ratingPayload: RatingPayload): R
       const rating: Rating = {
         id: uuidv4(),
         owner: ic.caller().toString(),
-        rate: ratingPayload.rating,
+        rate: ratingPayload.rate,
         updatedAt: ic.time()
       }
 
-      if (ratingPayload.rating < 1 || ratingPayload.rating > 10) {
+      if (ratingPayload.rate < 1 || ratingPayload.rate > 10) {
         return Result.Err<Cooperative, string>(`rating must be between 1 and 10`)
       }
       //update the rating 
-      ratings.push(ratingPayload.rating)
+      ratings.push(rating)
 
-      const updatedRate: Cooperative = {...cooperative, rating };
+      const updatedRate: Cooperative = {...cooperative, ratings };
       cooperativeStorage.insert(cooperative.coopID, updatedRate);
       return Result.Ok<Cooperative, string>(updatedRate);
       
