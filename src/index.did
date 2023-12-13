@@ -1,0 +1,51 @@
+type Cooperative = record {
+  members : vec Farmer;
+  coopName : text;
+  equipment : vec text;
+  publisher : text;
+  createdAt : nat64;
+  ratings : vec Rating;
+  description : text;
+  updatedAt : opt nat64;
+  address : text;
+  coopID : text;
+  products : vec text;
+};
+type CooperativePayload = record {
+  coopName : text;
+  equipment : vec text;
+  description : text;
+  address : text;
+  products : vec text;
+};
+type Farmer = record {
+  id : text;
+  owner : principal;
+  name : text;
+  email : opt text;
+  phone : nat64;
+};
+type FarmerPayload = record { name : text; email : opt text; phone : nat64 };
+type Rating = record {
+  id : text;
+  owner : text;
+  rate : float64;
+  updatedAt : nat64;
+};
+type RatingPayload = record { rate : float64 };
+type _AzleResult = variant { Ok : Cooperative; Err : text };
+type _AzleResult_1 = variant { Ok : vec Cooperative; Err : text };
+service : () -> {
+  applyCooperative : (text, FarmerPayload) -> (_AzleResult);
+  cancelAppliedCooperative : (text) -> (_AzleResult);
+  deleteCooperative : (text) -> (_AzleResult);
+  getAppliedCooperatives : () -> (_AzleResult_1) query;
+  getCooperative : (text) -> (_AzleResult) query;
+  getCooperatives : () -> (_AzleResult_1) query;
+  getMyCooperatives : () -> (_AzleResult_1) query;
+  getMyMembership : () -> (_AzleResult_1) query;
+  publishCooperative : (CooperativePayload) -> (_AzleResult);
+  rateCooperative : (text, RatingPayload) -> (_AzleResult);
+  searchCoops : (text) -> (_AzleResult_1) query;
+  updateCooperative : (text, CooperativePayload) -> (_AzleResult);
+}
